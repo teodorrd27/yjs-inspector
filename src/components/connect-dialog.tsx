@@ -1,7 +1,8 @@
 import { BlocksuiteWebsocketProvider } from "@/providers/blocksuite/provider";
 import { WebSocketConnectProvider } from "@/providers/websocket";
+import { CustomWSConnectProvider } from '@/providers/customws'
 import { RocketIcon, TriangleAlert } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import * as Y from "yjs";
 import { ConnectProvider } from "../providers/types";
 import { useYDoc } from "../state/index";
@@ -31,6 +32,7 @@ import { Switch } from "./ui/switch";
 // See https://github.com/toeverything/blocksuite/blob/db6e9d278e4d821e1d5aea912681e8fd1692b39e/packages/playground/apps/default/utils/collection.ts#L66
 const BLOCKSUITE_PLAYGROUND_DOC_GUID = "collabPlayground";
 const BLOCKSUITE_NAME = "Blocksuite Playground";
+const CUSTOM_WEBSOCKET = 'custom-websocket'
 
 const officialDemos = [
   {
@@ -91,6 +93,9 @@ export function ConnectDialog({
   const [needCreateNewDoc, setNeedCreateNewDoc] = useState(true);
   const officialDemo = officialDemos.find((demo) => demo.name === provider);
 
+  useEffect(() => {
+    console.log('your new ydoc is ', yDoc)
+  }, [yDoc])
   return (
     <DialogContent>
       <DialogHeader>
@@ -137,6 +142,7 @@ export function ConnectDialog({
 
               <SelectGroup>
                 <SelectLabel>Customs</SelectLabel>
+                <SelectItem value='custom-websocket'>custom-ws</SelectItem>
                 <SelectItem value="y-websocket">y-websocket</SelectItem>
                 <SelectItem value="y-webrtc" disabled>
                   y-webrtc (coming soon)
@@ -247,6 +253,12 @@ export function ConnectDialog({
               const connectProvider = new BlocksuiteWebsocketProvider(ws, doc);
               onConnect(connectProvider);
               return;
+            }
+
+            if (provider === CUSTOM_WEBSOCKET) {
+              const connectProvider = new CustomWSConnectProvider(url, doc)
+              onConnect(connectProvider)
+              return
             }
 
             const connectProvider = new WebSocketConnectProvider(
